@@ -1,0 +1,38 @@
+<project name="FrontLang" default="compile" basedir=".">
+    <property name="ant.build.javac.source" value="1.8"/>
+    <property name="ant.build.javac.target" value="1.8"/>
+    <property name="jflex.version" value="1.6.1" />
+    <property name="cup.version" value="11b" />
+    
+    <property name="cup" location="src/cup" />
+    <property name="jflex" location="src/jflex" />
+    <property name="java" location="src/java" />
+    <property name="classes" location="bin" />
+    <property name="lib" location="lib" />
+    <property name="tools" location="tools" />
+    
+    <property name="debug" value="true" />
+    
+    <path id="libraries">
+        <files includes="${lib}/java-cup-${cup.version}-runtime.jar" />
+    </path>
+    
+    <taskdef name="jflex" classname="jflex.anttask.JFlexTask" classpath="${tools}/jflex-${jflex.version}.jar" />
+    <taskdef name="cup" classname="java_cup.anttask.CUPTask" classpath="${tools}/java-cup-${cup.version}.jar" />
+    
+    <target name="clean">
+        <delete file="${java}/com/cjburkey/frontlang/FrontLangLexer.java" />
+        <delete file="${java}/com/cjburkey/frontlang/FrontLangParser.java" />
+        <delete file="${java}/com/cjburkey/frontlang/Symbols.java" />
+        <delete dir="${classes}" />
+    </target>
+    <target name="generate" depends="clean">
+        <jflex file="${jflex}/Scanner.jflex" destdir="${java}" verbose="on" time="on" />
+        <cup srcfile="${cup}/Parser.cup" destdir="${java}" parser="FrontLangParser" symbols="Symbols" progress="${debug}" time="${debug}" interface="true" locations="false" />
+    </target>
+    <target name="compile" depends="generate">
+        <javac target="1.8" srcdir="${java}" destdir="${classes}" >
+            <classpath refid="libraries" />
+        </javac>
+    </target>
+</project>

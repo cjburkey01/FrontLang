@@ -1,0 +1,89 @@
+// Includes members of the "System" library in the "com.frontlang" namespace.
+// Included libraries are available to all libraries contained in a file
+uselib System from com.frontlang;
+
+library Example in com.cjburkey.example {
+	
+	// All variables without a value in their definition must be marked "mut"
+	//	which means that the value of the variable can be changed (mutable)
+	// Even integers may be null, or "none"
+	// The following is equivalent to: "var mut int32 simpleTestInteger = none;"
+	var mut int32 simpleTestInteger;
+	
+	// Variables without the mutable attribute cannot be changed after their definition
+	var int32 aSecondTestInteger = 100;
+	
+	// Mutable variables can be changed
+	var mut int32 changeableTestInteger = 100;
+	
+	// This method is called when the program is launched with an array of "Str" which represent
+	// 	the arguments passed in the command line.
+	// Functions are limited to the library (private) unless explicitely made available (public)
+	// 	with the "public" keyword.
+	// The Main function MUST BE PUBLIC
+	function public Main(Str... args) {
+		// WILL PRODUCE ERRORS (neither "none" nor int32 are Str)
+		SimplePrint(simpleTestInteger);		// Would print "none"
+		simpleTestInteger = 500;			// Would produce an error because the variable is immutable
+		SimplePrint(aSecondTestInteger);	// Would print "100"
+		SimplePrint(changeableTestInteger);	// Would print "100"
+		changeableTestInteger = 500;
+		SimplePrint(changeableTestInteger);	// Would print "500"
+		
+		PrintToConsoleTest();
+		SimplePrint(CallOtherLibrary());
+		
+		SecondExample:PlainLoopExample();
+		SecondExample:ForEachLoopExample(args);
+	}
+	
+	function SimplePrint(Str message) {
+		System:GetOutput().PrintLine(message);
+	}
+	
+	function PrintToConsoleTest() {
+		SimplePrint("Hello world!");	// Prints to the console "Hello world!"
+	}
+	
+	// Functions will not return anything unless they are given a specific "returns" option.
+	// This function returns a standard 32-bit integer
+	function CallOtherLibrary() returns int32 {
+		return SecondExample:GetTheNumberThirtyFive();
+	}
+	
+}
+
+library SecondExample in com.cjburkey.example {
+	
+	// Make sure that libraries have very useful functions such as this one.
+	function public GetTheNumberThirtyFive() returns int32 {
+		return 25 + 10;
+	}
+	
+	function public PlainLoopExample() {
+		var int32 i;	// Integers default to 0
+		loop {
+			if (i >= 10) {
+				break;
+			}
+			System:GetOutput().PrintLine("Number a: " + i);	// String can be combined with '+'
+			i ++;
+		}
+		ForLoopExample();
+		
+		// Both loops produce the same output
+	}
+	
+	function public ForLoopExample() {
+		for (var int32 i; i < 10; i ++) {
+			System:GetOutput().PrintLine("Number b: " + i);
+		}
+	}
+	
+	function public ForEachLoopExample(Str... values) {
+		foreach (var Str value in values) {
+			System:GetOutput().PrintLine(value);
+		}
+	}
+	
+}

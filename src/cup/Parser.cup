@@ -1,0 +1,58 @@
+// -- Initialization -- //
+package com.cjburkey.frontlang;
+
+import java.io.Reader;
+import java_cup.runtime.*;
+
+parser code {:
+    private static ComplexSymbolFactory symbolsFactory;
+    Reader reader;
+    Scanner scanner;
+    FrontLangParser(Reader reader) { this(null, symbolsFactory = new ComplexSymbolFactory()); this.reader = reader; }
+    static ComplexSymbolFactory getSymbolsFactory() { return symbolsFactory; }
+:}
+
+init with {: scanner = new FrontLangLexer(reader); :};
+scan with {: return scanner.next_token(); :};
+
+// -- Terminals and non-terminals -- //
+
+// LANGUAGE TERMINALS
+terminal        USELIB, FROM, LIBRARY, IN, LBRACE, RBRACE, VAR, MUT, SEMICOLON, EQUALS, FUNCTION, PUBLIC, LPAR, RPAR, ARRDOTS, COLON, RETURNS, RETURN;
+
+// MATH TERMINALS
+terminal        PLUS, MINUS, UMINUS, GROUPED, TIMES, DIVIDE, EXPONENT, ROOT;
+
+// BITWISE TERMINALS
+terminal        OR, AND, XOR, LSHIFT, RSHIFT, NOT;
+
+// PRIMITIVE TERMINALS
+terminal        Integer INTEGER;
+terminal        Float   FLOAT;
+terminal        String  STRING;
+
+// NON-TERMINALS
+non terminal    STATEMENT;
+non terminal    Integer EXPRESSION;
+
+// PRECEDENCES
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence left UMINUS;
+precedence left EXPONENT, ROOT;
+precedence left GROUPED;
+
+// -- Grammar -- //
+
+EXPRESSION      ::= INTEGER:a                           {: RESULT = a; :}
+                  | MINUS EXPRESSION:a                  {: RESULT = a; :}
+                  %prec UMINUS
+                  | LPAR EXPRESSION:a RPAR              {: RESULT = a; :}
+                  %prec GROUPED
+                  | EXPRESSION:a PLUS EXPRESSION:b      {: RESULT = a + b; :}
+                  | EXPRESSION:a MINUS EXPRESSION:b     {: RESULT = a - b; :}
+                  | EXPRESSION:a TIMES EXPRESSION:b     {: RESULT = a * b; :}
+                  | EXPRESSION:a DIVIDE EXPRESSION:b    {: RESULT = a / b; :}
+                  | EXPRESSION:a EXPONENT EXPRESSION:b  {: RESULT = (int) java.lang.Math.pow(a, b); :}
+                  | EXPRESSION:a ROOT EXPRESSION:b      {: RESULT = (int) java.lang.Math.pow(a, 1.0f / b); :}
+                ;
